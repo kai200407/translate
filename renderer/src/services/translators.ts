@@ -12,11 +12,19 @@ export async function googleTranslate(text: string, from = 'auto', to = 'zh-CN')
     const start = Date.now();
     try {
         const url = `/api/google/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
-        const response = await axios.get(url, { timeout: 15000 });
-        const result = response.data[0].map((item: any[]) => item[0]).join('');
-        return { engine: '谷歌翻译', result, time: Date.now() - start };
+        const response = await axios.get(url, {
+            timeout: 15000,
+            headers: {
+                'Accept': '*/*',
+            }
+        });
+        if (response.data && response.data[0]) {
+            const result = response.data[0].map((item: any[]) => item[0]).filter(Boolean).join('');
+            return { engine: '谷歌翻译', result, time: Date.now() - start };
+        }
+        return { engine: '谷歌翻译', result: '', time: Date.now() - start, error: '无翻译结果' };
     } catch (error: any) {
-        return { engine: '谷歌翻译', result: '', time: Date.now() - start, error: error.message || '翻译失败' };
+        return { engine: '谷歌翻译', result: '', time: Date.now() - start, error: '需要VPN' };
     }
 }
 
@@ -26,15 +34,18 @@ export async function baiduTranslate(text: string): Promise<TranslateResult> {
     try {
         const url = `/api/baidu/sug`;
         const response = await axios.post(url, `kw=${encodeURIComponent(text)}`, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+            },
             timeout: 15000
         });
-        if (response.data.data && response.data.data.length > 0) {
+        if (response.data && response.data.data && response.data.data.length > 0) {
             return { engine: '百度翻译', result: response.data.data[0].v, time: Date.now() - start };
         }
         return { engine: '百度翻译', result: '', time: Date.now() - start, error: '无翻译结果' };
     } catch (error: any) {
-        return { engine: '百度翻译', result: '', time: Date.now() - start, error: error.message || '翻译失败' };
+        return { engine: '百度翻译', result: '', time: Date.now() - start, error: '请求失败' };
     }
 }
 
@@ -50,6 +61,25 @@ export async function youdaoTranslate(text: string): Promise<TranslateResult> {
         return { engine: '有道翻译', result: '', time: Date.now() - start, error: '无翻译结果' };
     } catch (error: any) {
         return { engine: '有道翻译', result: '', time: Date.now() - start, error: error.message || '翻译失败' };
+    }
+}
+
+// MyMemory翻译（免费API，无需VPN）
+export async function mymemoryTranslate(text: string, to = 'zh-CN'): Promise<TranslateResult> {
+    const start = Date.now();
+    try {
+        const langMap: Record<string, string> = {
+            'zh-CN': 'zh', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'fr': 'fr', 'de': 'de'
+        };
+        const targetLang = langMap[to] || 'zh';
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
+        const response = await axios.get(url, { timeout: 15000 });
+        if (response.data && response.data.responseData) {
+            return { engine: 'MyMemory', result: response.data.responseData.translatedText, time: Date.now() - start };
+        }
+        return { engine: 'MyMemory', result: '', time: Date.now() - start, error: '无翻译结果' };
+    } catch (error: any) {
+        return { engine: 'MyMemory', result: '', time: Date.now() - start, error: '请求失败' };
     }
 }
 
@@ -83,6 +113,7 @@ export async function translateAll(text: string, engine = 'all', targetLang = 'z
         google: () => googleTranslate(text, 'auto', targetLang),
         baidu: () => baiduTranslate(text),
         youdao: () => youdaoTranslate(text),
+        mymemory: () => mymemoryTranslate(text, targetLang),
         ai: () => aiTranslate(text, targetLang),
     };
 
@@ -95,11 +126,12 @@ export async function translateAll(text: string, engine = 'all', targetLang = 'z
         }
     }
 
+    // 全部引擎时，优先使用稳定的API
     const results = await Promise.allSettled([
-        googleTranslate(text, 'auto', targetLang),
-        baiduTranslate(text),
         youdaoTranslate(text),
-        aiTranslate(text, targetLang),
+        mymemoryTranslate(text, targetLang),
+        baiduTranslate(text),
+        googleTranslate(text, 'auto', targetLang),
     ]);
 
     return results.map((result) => {

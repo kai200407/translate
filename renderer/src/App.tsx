@@ -6,9 +6,10 @@ import './App.css';
 
 const ENGINES = [
   { id: 'all', name: '全部引擎' },
-  { id: 'google', name: '谷歌翻译' },
-  { id: 'baidu', name: '百度翻译' },
   { id: 'youdao', name: '有道翻译' },
+  { id: 'mymemory', name: 'MyMemory' },
+  { id: 'baidu', name: '百度翻译' },
+  { id: 'google', name: '谷歌翻译' },
   { id: 'ai', name: 'AI翻译' },
 ];
 
@@ -141,18 +142,25 @@ function App() {
 
   return (
     <div className="app-container" style={{ opacity }}>
-      {/* 标题栏 */}
+      {/* 标题栏 - Mac风格 */}
       <div className="title-bar" onMouseDown={handleMouseDown}>
-        <span className="title">翻译</span>
         <div className="window-controls">
+          <button className="close-btn" onClick={() => window.electronAPI?.closeWindow()} title="关闭">
+            <svg width="6" height="6" viewBox="0 0 6 6"><path d="M0 0L6 6M6 0L0 6" stroke="currentColor" strokeWidth="1.5" /></svg>
+          </button>
+          <button className="min-btn" onClick={() => window.electronAPI?.minimizeWindow()} title="最小化">
+            <svg width="8" height="2" viewBox="0 0 8 2"><path d="M0 1H8" stroke="currentColor" strokeWidth="1.5" /></svg>
+          </button>
           <button
             className={`pin-btn ${isAlwaysOnTop ? 'active' : ''}`}
             onClick={handleToggleAlwaysOnTop}
             title="置顶"
-          />
-          <button className="min-btn" onClick={() => window.electronAPI?.minimizeWindow()} title="最小化" />
-          <button className="close-btn" onClick={() => window.electronAPI?.closeWindow()} title="关闭" />
+          >
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor" /></svg>
+          </button>
         </div>
+        <span className="title">翻译</span>
+        <div className="title-spacer"></div>
       </div>
 
       {/* 工具栏 */}
