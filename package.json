@@ -1,0 +1,62 @@
+{
+  "name": "translator-widget",
+  "version": "1.0.0",
+  "description": "桌面翻译贴板应用 - 支持多翻译引擎、AI翻译、图片OCR",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "start": "concurrently \"npm run dev:renderer\" \"wait-on http://localhost:3000 && npm run dev:main\"",
+    "dev:main": "tsc -p tsconfig.main.json && electron .",
+    "dev:renderer": "cd renderer && npm run dev",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "cd renderer && npm run build",
+    "build": "npm run build:main && npm run build:renderer",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.translator.widget",
+    "productName": "翻译贴板",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/dist/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "keywords": [
+    "translator",
+    "desktop",
+    "widget"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^25.0.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "axios": "^1.13.2",
+    "concurrently": "^9.2.1",
+    "crypto-js": "^4.2.0",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "md5": "^2.3.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tesseract.js": "^7.0.0",
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.3"
+  }
+}

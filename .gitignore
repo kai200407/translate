@@ -1,0 +1,23 @@
+# Node dependencies
+node_modules/
+renderer/node_modules/
+
+# Build outputs
+dist/
+release/
+renderer/dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Misc
+*.log
+*.tgz
