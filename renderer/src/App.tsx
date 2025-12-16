@@ -237,7 +237,10 @@ function App() {
             ) : (
               results.map((result, index) => (
                 <div key={index} className={`result-card ${result.error ? 'error' : ''}`}>
-                  <div className="engine-name">{result.engine}</div>
+                  <div className="result-header">
+                    <span className="engine-name">{result.engine}</span>
+                    {result.time && <span className="result-time">{result.time}ms</span>}
+                  </div>
                   <div className="result-text">
                     {result.error ? result.error : result.result || '无结果'}
                   </div>
